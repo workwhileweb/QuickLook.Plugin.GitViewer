@@ -139,7 +139,7 @@ namespace QuickLook.Plugin.GitViewer
         private static string ConvertToHtmlWithHighlighting(string content)
         {
             // Define CSS styles for syntax highlighting
-            const string cssStyles = """
+            const string cssStylesWhite = """
                                      
                                                  <style>
                                                      body { font-family: monospace; background-color: #f4f4f4; padding: 20px; }
@@ -160,6 +160,49 @@ namespace QuickLook.Plugin.GitViewer
                                                      }
                                                  </style>
                                      """;
+            const string cssStylesDark = """
+                                          
+                                                      <style>
+                                                          body {
+                                                              font-family: monospace;
+                                                              background-color: #1e1e1e; /* Dark background */
+                                                              color: #d4d4d4; /* Light text */
+                                                              padding: 20px;
+                                                          }
+                                                          .git-command {
+                                                              color: #569cd6; /* Blue for Git commands */
+                                                              font-weight: bold;
+                                                              font-size: 1.2em;
+                                                          }
+                                                          .file-change {
+                                                              color: #ce9178; /* Orange for file changes */
+                                                              font-size: 1.2em;
+                                                          }
+                                                          .branch-info {
+                                                              color: #c586c0; /* Purple for branch info */
+                                                              font-size: 1.2em;
+                                                          }
+                                                          .status-info {
+                                                              color: #6a9955; /* Green for status info */
+                                                              font-size: 1.2em;
+                                                          }
+                                                          a.url {
+                                                              color: #9cdcfe; /* Light blue for URLs */
+                                                              text-decoration: underline;
+                                                              font-size: 1.2em;
+                                                          }
+                                                          .copy-btn {
+                                                              margin-left: 5px;
+                                                              cursor: pointer;
+                                                              color: #9cdcfe; /* Light blue for copy button */
+                                                              font-size: 0.9em;
+                                                              text-decoration: none;
+                                                          }
+                                                          .copy-btn:hover {
+                                                              text-decoration: underline;
+                                                          }
+                                                      </style>
+                                          """;
             // JavaScript for copying to clipboard
             const string jsScript = """
                                     
@@ -175,7 +218,7 @@ namespace QuickLook.Plugin.GitViewer
                                     """;
 
             // Wrap the content in a <pre> tag for preserving whitespace
-            var htmlContent = $"<!DOCTYPE html>\n<html>\n<head>\n{cssStyles}{jsScript}\n</head>\n<body>\n<pre>";
+            var htmlContent = $"<!DOCTYPE html>\n<html>\n<head>\n{cssStylesDark}{jsScript}\n</head>\n<body>\n<pre>";
 
             // Split the content into lines
             var lines = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);

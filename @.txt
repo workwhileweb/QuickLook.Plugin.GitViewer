@@ -1,2 +1,5 @@
 quickview add toast và handle webview
 auto debug plugin và quit, copy, rerun plugin
+
+D:\wWw\code\QuickLook.Plugin.GitViewer
+C:\Users\TuanAdmin\AppData\Local\Programs\QuickLook\QuickLook.Plugin
