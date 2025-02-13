@@ -1,0 +1,2 @@
+quickview add toast và handle webview
+auto debug plugin và quit, copy, rerun plugin
