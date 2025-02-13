@@ -24,6 +24,8 @@ using System.Windows.Threading;
 using QuickLook.Common.Plugin;
 using QuickLook.Plugin.HtmlViewer;
 
+// ReSharper disable UnusedMember.Global
+
 namespace QuickLook.Plugin.GitViewer
 {
     /// <summary>
@@ -44,7 +46,7 @@ namespace QuickLook.Plugin.GitViewer
 
         public void Prepare(string path, ContextObject context)
         {
-            context.PreferredSize = new Size {Width = 600, Height = 800};
+            context.PreferredSize = new Size {Width = 800, Height = 600};
         }
 
         public void View(string path, ContextObject context)
@@ -54,6 +56,18 @@ namespace QuickLook.Plugin.GitViewer
             context.Title = Path.GetFileName(path);
             _file = GenerateHtml(path);
             _panel.NavigateToFile(_file);
+
+            /*_panel.Navigating += (sender, e) =>
+            {
+                if (e.Uri == null || !e.Uri.IsAbsoluteUri) return;
+                e.Cancel = true;
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = e.Uri.AbsoluteUri,
+                    UseShellExecute = true
+                });
+            };*/
+           
             _panel.Dispatcher.Invoke(() => { context.IsBusy = false; }, DispatcherPriority.Loaded);
         }
 
@@ -68,7 +82,7 @@ namespace QuickLook.Plugin.GitViewer
         }
 
 
-        private (string output, string error) Exec2(string exe, string args, string dir)
+        private static (string output, string error) Exec2(string exe, string args, string dir)
         {
             try
             {
@@ -80,7 +94,7 @@ namespace QuickLook.Plugin.GitViewer
             }
         }
 
-        private string Exec(string exe, string args, string dir)
+        private static string Exec(string exe, string args, string dir)
         {
             var process = new System.Diagnostics.Process
             {
@@ -104,7 +118,7 @@ namespace QuickLook.Plugin.GitViewer
             return result;
         }
 
-        private string RunGit2(string path)
+        private static string RunGit2(string path)
         {
             var args = new[]{
                 "remote -v",
@@ -125,18 +139,43 @@ namespace QuickLook.Plugin.GitViewer
         private static string ConvertToHtmlWithHighlighting(string content)
         {
             // Define CSS styles for syntax highlighting
-            const string cssStyles = @"
-            <style>
-                body { font-family: monospace; background-color: #f4f4f4; padding: 20px; }
-                .git-command { color: #005cc5; font-weight: bold; font-size: 1.2em; }
-                .file-change { color: #d73a49; font-size: 1.5em; }
-                .branch-info { color: #6f42c1; font-size: 1.2em; }
-                .status-info { color: #22863a; font-size: 1.2em; }
-                a.url { color: #032b6b; text-decoration: underline; font-size: 1.3em; }
-            </style>";
+            const string cssStyles = """
+                                     
+                                                 <style>
+                                                     body { font-family: monospace; background-color: #f4f4f4; padding: 20px; }
+                                                     .git-command { color: #005cc5; font-weight: bold; font-size: 1.2em; }
+                                                     .file-change { color: #d73a49; font-size: 1.5em; }
+                                                     .branch-info { color: #6f42c1; font-size: 1.2em; }
+                                                     .status-info { color: #22863a; font-size: 1.2em; }
+                                                     a.url { color: #032b6b; text-decoration: underline; font-size: 1.3em; }
+                                                     .copy-btn {
+                                                         margin-left: 5px;
+                                                         cursor: pointer;
+                                                         color: #005cc5;
+                                                         font-size: 0.9em;
+                                                         text-decoration: none;
+                                                     }
+                                                     .copy-btn:hover {
+                                                         text-decoration: underline;
+                                                     }
+                                                 </style>
+                                     """;
+            // JavaScript for copying to clipboard
+            const string jsScript = """
+                                    
+                                                <script>
+                                                    function copyToClipboard(text) {
+                                                        navigator.clipboard.writeText(text).then(() => {
+                                                            alert('Copied to clipboard: ' + text);
+                                                        }).catch(err => {
+                                                            console.error('Failed to copy text: ', err);
+                                                        });
+                                                    }
+                                                </script>
+                                    """;
 
             // Wrap the content in a <pre> tag for preserving whitespace
-            var htmlContent = $"<!DOCTYPE html>\n<html>\n<head>\n{cssStyles}\n</head>\n<body>\n<pre>";
+            var htmlContent = $"<!DOCTYPE html>\n<html>\n<head>\n{cssStyles}{jsScript}\n</head>\n<body>\n<pre>";
 
             // Split the content into lines
             var lines = content.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -176,7 +215,7 @@ namespace QuickLook.Plugin.GitViewer
                     highlightedLine = Regex.Replace(line, @"(https?://[^\s]+)", match =>
                     {
                         var url = match.Value;
-                        return $"<a class='url' href='{url}'>{url}</a>";
+                        return $"<a class='url' href='{url}'>{url}</a> <span class='copy-btn' onclick=\"copyToClipboard('{url}')\">📋</span>";
                     });
                 }
 
@@ -190,9 +229,9 @@ namespace QuickLook.Plugin.GitViewer
             return htmlContent;
         }
 
-        private string GenerateHtml(string path)
+        private static string GenerateHtml(string path)
         {
-            var file = Path.Combine(Path.GetTempPath(), Guid.NewGuid()+".html");
+            var file = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid()}.html");
             var content = RunGit2(path);
             File.WriteAllText(file, ConvertToHtmlWithHighlighting(content));
             return file;
